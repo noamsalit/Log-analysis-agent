@@ -4,7 +4,9 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
+
 class IdentificationRule(BaseModel):
+    """Rule for identifying a specific log type."""
     field: str = Field(..., description="Field name in the raw event to evaluate.")
     operator: str = Field(
         ..., description="Comparison operator (e.g., equals, contains, etc.)."
@@ -18,6 +20,7 @@ class IdentificationRule(BaseModel):
 
 
 class IdentificationRules(BaseModel):
+    """Collection of identification rules for a log type."""
     primary: List[IdentificationRule] = Field(
         ..., description="High-signal rules that primarily identify this log type."
     )
@@ -28,6 +31,7 @@ class IdentificationRules(BaseModel):
 
 
 class ParsedFieldMetadata(BaseModel):
+    """Metadata about a parsing operation performed on a field."""
     field_path: str = Field(
         ...,
         description="The field path that was parsed (from raw data or within a parent's parsed result)."
@@ -51,6 +55,7 @@ class ParsedFieldMetadata(BaseModel):
 
 
 class FieldSchema(BaseModel):
+    """Schema definition for a single field in a log type."""
     field_path: str = Field(
         ..., description="Dot-path to the field in the event (e.g., location.ipAddress)."
     )
@@ -67,6 +72,7 @@ class FieldSchema(BaseModel):
 
 
 class LogType(BaseModel):
+    """Complete definition of a discovered log type."""
     name: str = Field(..., description="Human-readable name for the log type.")
     primary_use: str = Field(
         ..., description="Primary analytics purpose of this log type (what insights it enables)."
@@ -87,6 +93,12 @@ class LogType(BaseModel):
 
 
 class SchemaDocument(BaseModel):
+    """
+    Complete schema analysis document for a log index.
+    
+    This is the main output of the log analysis agent, containing all
+    discovered log types, their schemas, and analysis metadata.
+    """
     index_name: str
     total_logs_analyzed: int = Field(
         ..., ge=0, description="Total number of log events processed in this analysis run."
@@ -116,3 +128,4 @@ class SchemaDocument(BaseModel):
     processing_time_minutes: float = Field(
         ..., ge=0.0, description="Wall-clock processing time for the analysis, in minutes."
     )
+

@@ -3,7 +3,7 @@ import json
 from langchain_core.tools import ToolException
 
 from utilities.tools.schema_validation import parse_and_validate_schema_document
-from models.log_type_schema import SchemaDocument
+from logs_analysis_agent.schema_models import SchemaDocument
 
 
 class TestParseAndValidateSchemaDocument:

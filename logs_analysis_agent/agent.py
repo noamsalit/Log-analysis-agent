@@ -8,14 +8,24 @@ if str(repo_root) not in sys.path:
 import dotenv
 import os
 import json
+import logging
 
 from langchain_openai import AzureChatOpenAI
 from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
-from models.log_type_schema import SchemaDocument
-from utilities.logger import init_logger
+from logs_analysis_agent.schema_models import SchemaDocument
+from utilities.logger import init_logger, TRACE
 from utilities.handles_registry import HandlesRegistry
+from utilities.correlation_id_management import (
+    generate_correlation_id,
+    set_correlation_id,
+    clear_correlation_id
+)
+from utilities.callbacks import (
+    ObservabilityCallbackHandler,
+    AzureOpenAINormalizer
+)
 from utilities.tools import (
     # Parsers
     json_parser,
@@ -44,13 +54,18 @@ AZURE_OPENAI_ENDPOINT=os.getenv("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_API_VERSION=os.getenv("AZURE_OPENAI_API_VERSION")
 AZURE_OPENAI_API_DEPLOYMENT_NAME=os.getenv("AZURE_OPENAI_API_DEPLOYMENT_NAME")
 
-logger = init_logger(__name__)
+logger = init_logger(
+    name=__name__,
+    console_level=logging.INFO,
+    file_level=TRACE  # TRACE level for detailed observability logs
+)
 
 llm_client = AzureChatOpenAI(
     api_key=AZURE_OPENAI_API_KEY,
     azure_endpoint=AZURE_OPENAI_ENDPOINT,
     api_version=AZURE_OPENAI_API_VERSION,
     azure_deployment=AZURE_OPENAI_API_DEPLOYMENT_NAME,
+    model_kwargs={"stream_options": {"include_usage": True}}
 )
 
 def _load_example_schema() -> str:
@@ -210,59 +225,81 @@ def run_agent(index_name: str, logs_file_path: str) -> SchemaDocument:
     """
     Run the agent with the given input text.
     """
-    registry = HandlesRegistry()
-    open_and_register_jsonl, read_jsonl, close_jsonl = make_file_tools(registry)
+    # Generate and set correlation ID for this run
+    run_id = generate_correlation_id()
+    set_correlation_id(run_id)
+    logger.info(f"Starting agent run with correlation ID: {run_id}")
     
-    tools = [
-        # JSONL file operations
-        open_and_register_jsonl,
-        read_jsonl,
-        close_jsonl,
-        line_count,
-        write_json,
-        parse_and_validate_schema_document,
-        # Parsers
-        json_parser,
-        cef_parser,
-        syslog_kv_parser,
-        # File operations for parser development
-        search_files,
-        find_similar_files,
-        read_file_content,
-        write_file_content,
-        list_directory_contents,
-        validate_python_syntax,
-        run_safe_command
-    ]
-    
-    open_and_register_jsonl.handle_tool_error = lambda e: f"open_and_register_jsonl error: {e}"
-    read_jsonl.handle_tool_error = lambda e: f"read_jsonl error: {e}"
-    close_jsonl.handle_tool_error = lambda e: f"close_jsonl error: {e}"
-    line_count.handle_tool_error = lambda e: f"line_count error: {e}"
-    write_json.handle_tool_error = lambda e: f"write_json error: {e}"
-    parse_and_validate_schema_document.handle_tool_error = lambda e: f"parse_and_validate_schema_document error: {e}"
-    json_parser.handle_tool_error = lambda e: f"json_parser error: {e}"
-    cef_parser.handle_tool_error = lambda e: f"cef_parser error: {e}"
-    syslog_kv_parser.handle_tool_error = lambda e: f"syslog_kv_parser error: {e}"
-    search_files.handle_tool_error = lambda e: f"search_files error: {e}"
-    find_similar_files.handle_tool_error = lambda e: f"find_similar_files error: {e}"
-    read_file_content.handle_tool_error = lambda e: f"read_file_content error: {e}"
-    write_file_content.handle_tool_error = lambda e: f"write_file_content error: {e}"
-    list_directory_contents.handle_tool_error = lambda e: f"list_directory_contents error: {e}"
-    validate_python_syntax.handle_tool_error = lambda e: f"validate_python_syntax error: {e}"
-    run_safe_command.handle_tool_error = lambda e: f"run_safe_command error: {e}"
-    
-    agent = create_openai_tools_agent(llm=llm_client, tools=tools, prompt=prompt)
-    agent_executor = AgentExecutor(
-        agent=agent,
-        tools=tools,
-        verbose=True,
-        handle_parsing_errors=True 
+    # Initialize observability callback handler
+    normalizer = AzureOpenAINormalizer()
+    observability_handler = ObservabilityCallbackHandler(
+        logger=logger,
+        run_id=run_id,
+        normalizer=normalizer
     )
     
-    input_text = f"Index name: {index_name}, Logs file path: {logs_file_path}"
-    agent_result = agent_executor.invoke({"input": input_text})
-    return SchemaDocument.model_validate_json(agent_result["output"])
+    try:
+        registry = HandlesRegistry()
+        open_and_register_jsonl, read_jsonl, close_jsonl = make_file_tools(registry)
+        
+        tools = [
+            # JSONL file operations
+            open_and_register_jsonl,
+            read_jsonl,
+            close_jsonl,
+            line_count,
+            write_json,
+            parse_and_validate_schema_document,
+            # Parsers
+            json_parser,
+            cef_parser,
+            syslog_kv_parser,
+            # File operations for parser development
+            search_files,
+            find_similar_files,
+            read_file_content,
+            write_file_content,
+            list_directory_contents,
+            validate_python_syntax,
+            run_safe_command
+        ]
+        
+        open_and_register_jsonl.handle_tool_error = lambda e: f"open_and_register_jsonl error: {e}"
+        read_jsonl.handle_tool_error = lambda e: f"read_jsonl error: {e}"
+        close_jsonl.handle_tool_error = lambda e: f"close_jsonl error: {e}"
+        line_count.handle_tool_error = lambda e: f"line_count error: {e}"
+        write_json.handle_tool_error = lambda e: f"write_json error: {e}"
+        parse_and_validate_schema_document.handle_tool_error = lambda e: f"parse_and_validate_schema_document error: {e}"
+        json_parser.handle_tool_error = lambda e: f"json_parser error: {e}"
+        cef_parser.handle_tool_error = lambda e: f"cef_parser error: {e}"
+        syslog_kv_parser.handle_tool_error = lambda e: f"syslog_kv_parser error: {e}"
+        search_files.handle_tool_error = lambda e: f"search_files error: {e}"
+        find_similar_files.handle_tool_error = lambda e: f"find_similar_files error: {e}"
+        read_file_content.handle_tool_error = lambda e: f"read_file_content error: {e}"
+        write_file_content.handle_tool_error = lambda e: f"write_file_content error: {e}"
+        list_directory_contents.handle_tool_error = lambda e: f"list_directory_contents error: {e}"
+        validate_python_syntax.handle_tool_error = lambda e: f"validate_python_syntax error: {e}"
+        run_safe_command.handle_tool_error = lambda e: f"run_safe_command error: {e}"
+        
+        agent = create_openai_tools_agent(llm=llm_client, tools=tools, prompt=prompt)
+        agent_executor = AgentExecutor(
+            agent=agent,
+            tools=tools,
+            verbose=True,
+            handle_parsing_errors=True,
+            callbacks=[observability_handler]
+        )
+        
+        input_text = f"Index name: {index_name}, Logs file path: {logs_file_path}"
+        agent_result = agent_executor.invoke(
+            {"input": input_text},
+            config={"callbacks": [observability_handler]}
+        )
+        return SchemaDocument.model_validate_json(agent_result["output"])
+    finally:
+        # Clean up correlation ID after run
+        clear_correlation_id()
+        logger.info(f"Completed agent run: {run_id}")
 
 if __name__ == "__main__":
     index_name = "device_data"

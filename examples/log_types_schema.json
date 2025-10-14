@@ -1,414 +1,1106 @@
 {
-    "index_name": "security_logs",
-    "total_logs_analyzed": 13,
-    "analysis_batches_processed": 3,
-    "log_types": {
-      "azure_ad_signin": {
-        "name": "Azure Active Directory Sign-in Logs",
-        "primary_use": "Azure AD user authentication and sign-in events",
-        "count_in_dataset": 3,
-        "identification_rules": {
-          "primary": [
-            {
-              "field": "_sourcetype",
-              "operator": "equals",
-              "value": "azure:aad:signin",
-              "confidence": 0.95
-            }
-          ],
-          "secondary": [
-            {
-              "field": "_raw",
-              "operator": "contains",
-              "value": "\"userPrincipalName\":",
-              "confidence": 0.8
-            },
-            {
-              "field": "_raw",
-              "operator": "contains",
-              "value": "\"appDisplayName\":",
-              "confidence": 0.75
-            }
-          ]
-        },
-        "schema": {
-          "_time": {
-            "field_path": "_time",
-            "semantic_type": "timestamp",
-            "examples": ["2025-07-01T06:50:20.000+00:00", "2025-07-01T08:15:33.000+00:00"],
-            "common_patterns": ["ISO 8601 datetime with timezone"]
-          },
-          "_sourcetype": {
-            "field_path": "_sourcetype",
-            "semantic_type": "log_source_identifier",
-            "examples": ["azure:aad:signin"],
-            "common_patterns": ["colon-separated source type"]
-          },
-          "id": {
-            "field_path": "id",
-            "semantic_type": "event_id",
-            "examples": ["5a0f1a9b-ccce-49b6-8d3f-922938ac9d00", "59abe120-d2ac-4498-9f23-8781b711ae00"],
-            "common_patterns": ["UUID format"]
-          },
-          "userPrincipalName": {
-            "field_path": "userPrincipalName",
-            "semantic_type": "username",
-            "examples": ["user123@company.com", "jane.smith@company.com"],
-            "common_patterns": ["email format username"]
-          },
-          "location.ipAddress": {
-            "field_path": "location.ipAddress",
-            "semantic_type": "ip_address",
-            "examples": ["192.168.1.100", "10.0.0.1", "203.0.113.45"],
-            "common_patterns": ["IPv4 addresses"]
-          },
-          "location.city": {
-            "field_path": "location.city",
-            "semantic_type": "city_name",
-            "examples": ["New York", "London", "Tokyo"],
-            "common_patterns": ["City names"]
-          },
-          "location.geoCoordinates.latitude": {
-            "field_path": "location.geoCoordinates.latitude",
-            "semantic_type": "latitude",
-            "examples": [40.7128, 51.5074, 35.6762],
-            "common_patterns": ["Decimal degrees"]
-          },
-          "location.geoCoordinates.longitude": {
-            "field_path": "location.geoCoordinates.longitude",
-            "semantic_type": "longitude",
-            "examples": [-74.0060, -0.1278, 139.6503],
-            "common_patterns": ["Decimal degrees"]
-          },
-          "deviceDetail.browser": {
-            "field_path": "deviceDetail.browser",
-            "semantic_type": "browser_name",
-            "examples": ["Chrome", "Firefox", "Safari"],
-            "common_patterns": ["Browser names"]
-          },
-          "deviceDetail.operatingSystem": {
-            "field_path": "deviceDetail.operatingSystem",
-            "semantic_type": "operating_system",
-            "examples": ["Windows 10", "macOS", "iOS"],
-            "common_patterns": ["OS names with versions"]
-          },
-          "status.errorCode": {
-            "field_path": "status.errorCode",
-            "semantic_type": "error_code",
-            "examples": ["0", "50126", "50140"],
-            "common_patterns": ["Numeric error codes"]
-          },
-          "status.failureReason": {
-            "field_path": "status.failureReason",
-            "semantic_type": "error_message",
-            "examples": ["Invalid username or password", "Account locked", null],
-            "common_patterns": ["Human readable error messages or null"]
-          }
-        },
-        "parsing_metadata": [
+  "index_name": "security_logs",
+  "total_logs_analyzed": 13,
+  "analysis_batches_processed": 1,
+  "log_types": {
+    "azure_ad_signin": {
+      "name": "Azure Active Directory Sign-in Logs",
+      "primary_use": "Azure AD user authentication and sign-in events",
+      "count_in_dataset": 3,
+      "identification_rules": {
+        "primary": [
           {
-            "field_path": "location.geoCoordinates",
-            "parsers_or_formats": ["json_parser"],
-            "resulting_field_paths": ["location.geoCoordinates.latitude", "location.geoCoordinates.longitude"],
-            "parent_parsed_field": null,
-            "parse_level": 0
+            "field": "_sourcetype",
+            "operator": "equals",
+            "value": "azure:aad:signin",
+            "confidence": 0.95
+          }
+        ],
+        "secondary": [
+          {
+            "field": "userPrincipalName",
+            "operator": "contains",
+            "value": "@",
+            "confidence": 0.8
           }
         ]
       },
-      "o365_teams_activity": {
-        "name": "Microsoft Teams Activity Logs",
-        "primary_use": "Microsoft Teams user activity and communication events",
-        "count_in_dataset": 3,
-        "identification_rules": {
-          "primary": [
-            {
-              "field": "_sourcetype",
-              "operator": "equals",
-              "value": "o365:management:activity",
-              "confidence": 0.9
-            },
-            {
-              "field": "RecordType",
-              "operator": "equals",
-              "value": "25",
-              "confidence": 0.95
-            }
+      "schema": {
+        "_time": {
+          "field_path": "_time",
+          "semantic_type": "timestamp",
+          "examples": [
+            "2025-07-01T06:50:20.000+00:00",
+            "2025-07-01T08:15:33.000+00:00"
           ],
-          "secondary": [
-            {
-              "field": "_raw",
-              "operator": "contains",
-              "value": "\"Workload\":\"MicrosoftTeams\"",
-              "confidence": 0.85
-            }
+          "common_patterns": [
+            "ISO 8601 datetime with timezone"
           ]
         },
-        "schema": {
-          "_time": {
-            "field_path": "_time",
-            "semantic_type": "timestamp",
-            "examples": ["2025-07-01T06:55:51.000+00:00", "2025-07-01T09:22:15.000+00:00"],
-            "common_patterns": ["ISO 8601 datetime with timezone"]
-          },
-          "_sourcetype": {
-            "field_path": "_sourcetype",
-            "semantic_type": "log_source_identifier",
-            "examples": ["o365:management:activity"],
-            "common_patterns": ["colon-separated source type"]
-          },
-          "Id": {
-            "field_path": "Id",
-            "semantic_type": "event_id",
-            "examples": ["b36325e4-7d3a-4399-97d6-8a4c30954b77", "c47436f5-8e4b-5500-a8e7-9b5d41065c88"],
-            "common_patterns": ["UUID format"]
-          },
-          "Operation": {
-            "field_path": "Operation",
-            "semantic_type": "action_type",
-            "examples": ["MessagesListed", "TeamsSessionStarted", "CallStarted"],
-            "common_patterns": ["CamelCase operation names"]
-          },
-          "RecordType": {
-            "field_path": "RecordType",
-            "semantic_type": "record_type_id",
-            "examples": ["25"],
-            "common_patterns": ["Numeric record type identifier"]
-          },
-          "UserId": {
-            "field_path": "UserId",
-            "semantic_type": "username",
-            "examples": ["john.doe@company.com", "jane.smith@company.com"],
-            "common_patterns": ["email format username"]
-          },
-          "ClientIP": {
-            "field_path": "ClientIP",
-            "semantic_type": "ip_address",
-            "examples": ["192.168.1.50", "10.0.0.25"],
-            "common_patterns": ["IPv4 addresses"]
-          },
-          "TeamsMeetingDetail.MeetingURL": {
-            "field_path": "TeamsMeetingDetail.MeetingURL",
-            "semantic_type": "url",
-            "examples": ["https://teams.microsoft.com/l/meetup-join/...", "https://teams.microsoft.com/l/meetup-join/..."],
-            "common_patterns": ["Teams meeting URLs"]
-          },
-          "TeamsMeetingDetail.Participants.UserId": {
-            "field_path": "TeamsMeetingDetail.Participants.UserId",
-            "semantic_type": "username",
-            "examples": ["user1@company.com", "user2@company.com", "alice@company.com"],
-            "common_patterns": ["email format username"]
-          },
-          "TeamsMeetingDetail.Participants.Role": {
-            "field_path": "TeamsMeetingDetail.Participants.Role",
-            "semantic_type": "participant_role",
-            "examples": ["Organizer", "Attendee", "Presenter"],
-            "common_patterns": ["Role type"]
-          },
-          "CommunicationType": {
-            "field_path": "CommunicationType",
-            "semantic_type": "communication_method",
-            "examples": ["Channel", "Chat", "Meeting"],
-            "common_patterns": ["Communication type categories"]
-          },
-          "MessageDetails.message": {
-            "field_path": "MessageDetails.message",
-            "semantic_type": "message_text",
-            "examples": ["Hello world", "Meeting scheduled", "Team sync call"],
-            "common_patterns": ["Plain text messages"]
-          },
-          "MessageDetails.timestamp": {
-            "field_path": "MessageDetails.timestamp",
-            "semantic_type": "timestamp",
-            "examples": ["2025-07-01T10:00:00Z", "2025-07-01T14:30:00Z", "2025-07-01T10:05:00Z"],
-            "common_patterns": ["ISO 8601 datetime"]
-          }
+        "_sourcetype": {
+          "field_path": "_sourcetype",
+          "semantic_type": "log_source_identifier",
+          "examples": [
+            "azure:aad:signin"
+          ],
+          "common_patterns": [
+            "colon-separated source type"
+          ]
         },
-        "parsing_metadata": [
-          {
-            "field_path": "TeamsMeetingDetail.Participants",
-            "parsers_or_formats": ["json_parser"],
-            "resulting_field_paths": ["TeamsMeetingDetail.Participants.UserId", "TeamsMeetingDetail.Participants.Role"],
-            "parent_parsed_field": null,
-            "parse_level": 0
-          },
-          {
-            "field_path": "MessageDetails",
-            "parsers_or_formats": ["base64-decode", "json_parser"],
-            "resulting_field_paths": ["MessageDetails.message", "MessageDetails.timestamp"],
-            "parent_parsed_field": null,
-            "parse_level": 0
-          }
-        ]
+        "id": {
+          "field_path": "id",
+          "semantic_type": "event_id",
+          "examples": [
+            "5a0f1a9b-ccce-49b6-8d3f-922938ac9d00",
+            "59abe120-d2ac-4498-9f23-8781b711ae00",
+            "7c2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
+          ],
+          "common_patterns": [
+            "UUID format"
+          ]
+        },
+        "userPrincipalName": {
+          "field_path": "userPrincipalName",
+          "semantic_type": "username",
+          "examples": [
+            "user123@company.com",
+            "jane.smith@company.com",
+            "admin@company.com"
+          ],
+          "common_patterns": [
+            "email format username"
+          ]
+        },
+        "location.ipAddress": {
+          "field_path": "location.ipAddress",
+          "semantic_type": "ip_address",
+          "examples": [
+            "192.168.1.100",
+            "10.0.0.1",
+            "203.0.113.45"
+          ],
+          "common_patterns": [
+            "IPv4 addresses"
+          ]
+        },
+        "location.city": {
+          "field_path": "location.city",
+          "semantic_type": "city_name",
+          "examples": [
+            "New York",
+            "London",
+            "Tokyo"
+          ],
+          "common_patterns": [
+            "City names"
+          ]
+        },
+        "location.geoCoordinates.latitude": {
+          "field_path": "location.geoCoordinates.latitude",
+          "semantic_type": "latitude",
+          "examples": [
+            40.7128,
+            51.5074,
+            35.6762
+          ],
+          "common_patterns": [
+            "Decimal degrees"
+          ]
+        },
+        "location.geoCoordinates.longitude": {
+          "field_path": "location.geoCoordinates.longitude",
+          "semantic_type": "longitude",
+          "examples": [
+            -74.006,
+            -0.1278,
+            139.6503
+          ],
+          "common_patterns": [
+            "Decimal degrees"
+          ]
+        },
+        "deviceDetail.browser": {
+          "field_path": "deviceDetail.browser",
+          "semantic_type": "browser_name",
+          "examples": [
+            "Chrome",
+            "Firefox",
+            "Safari"
+          ],
+          "common_patterns": [
+            "Browser names"
+          ]
+        },
+        "deviceDetail.operatingSystem": {
+          "field_path": "deviceDetail.operatingSystem",
+          "semantic_type": "operating_system",
+          "examples": [
+            "Windows 10",
+            "macOS",
+            "iOS"
+          ],
+          "common_patterns": [
+            "OS names with versions"
+          ]
+        },
+        "status.errorCode": {
+          "field_path": "status.errorCode",
+          "semantic_type": "error_code",
+          "examples": [
+            "0",
+            "50126"
+          ],
+          "common_patterns": [
+            "Numeric error codes as strings"
+          ]
+        },
+        "status.failureReason": {
+          "field_path": "status.failureReason",
+          "semantic_type": "error_message",
+          "examples": [
+            null,
+            "Invalid username or password"
+          ],
+          "common_patterns": [
+            "Human readable error messages or null"
+          ]
+        }
       },
-      "cef_security_logs": {
-        "name": "CEF Security Logs",
-        "primary_use": "Network security events in Common Event Format",
-        "count_in_dataset": 7,
-        "identification_rules": {
-          "primary": [
-            {
-              "field": "_raw",
-              "operator": "contains",
-              "value": "CEF:",
-              "confidence": 0.98
-            }
+      "parsing_metadata": [
+        {
+          "field_path": "location.geoCoordinates",
+          "parsers_or_formats": [
+            "json_parser"
           ],
-          "secondary": [
-            {
-              "field": "_sourcetype",
-              "operator": "contains",
-              "value": "cef",
-              "confidence": 0.85
-            }
-          ]
-        },
-        "schema": {
-          "_raw.syslog_prefix": {
-            "field_path": "_raw.syslog_prefix",
-            "semantic_type": "syslog_header",
-            "examples": ["<134>Sep 21 10:15:42 firewall-01", "<189>Sep 21 10:17:30 firewall-01"],
-            "common_patterns": ["Syslog priority and timestamp"]
-          },
-          "_raw.cef_header.version": {
-            "field_path": "_raw.cef_header.version",
-            "semantic_type": "cef_version",
-            "examples": ["0"],
-            "common_patterns": ["CEF version number"]
-          },
-          "_raw.cef_header.device_vendor": {
-            "field_path": "_raw.cef_header.device_vendor",
-            "semantic_type": "vendor_name",
-            "examples": ["Fortinet", "Palo Alto Networks", "Check Point", "Apache", "Nginx"],
-            "common_patterns": ["Vendor names"]
-          },
-          "_raw.cef_header.device_product": {
-            "field_path": "_raw.cef_header.device_product",
-            "semantic_type": "product_name",
-            "examples": ["Fortigate", "PAN-OS", "VPN-1", "HTTPd", "Plus"],
-            "common_patterns": ["Product names"]
-          },
-          "_raw.extension.src": {
-            "field_path": "_raw.extension.src",
-            "semantic_type": "ip_address",
-            "examples": ["10.1.1.100", "192.168.50.25", "203.0.113.10"],
-            "common_patterns": ["IPv4 addresses"]
-          },
-          "_raw.extension.dst": {
-            "field_path": "_raw.extension.dst",
-            "semantic_type": "ip_address",
-            "examples": ["8.8.8.8", "1.1.1.1", "172.16.0.1"],
-            "common_patterns": ["IPv4 addresses"]
-          },
-          "_raw.extension.spt": {
-            "field_path": "_raw.extension.spt",
-            "semantic_type": "port_number",
-            "examples": ["54321", "49152", "8080"],
-            "common_patterns": ["Port numbers"]
-          },
-          "_raw.extension.dpt": {
-            "field_path": "_raw.extension.dpt",
-            "semantic_type": "port_number",
-            "examples": ["443", "53", "80"],
-            "common_patterns": ["Port numbers"]
-          },
-          "_raw.extension.devicePayload.user": {
-            "field_path": "_raw.extension.devicePayload.user",
-            "semantic_type": "username",
-            "examples": ["alice"],
-            "common_patterns": ["Lowercase usernames"]
-          },
-          "_raw.extension.devicePayload.session_id": {
-            "field_path": "_raw.extension.devicePayload.session_id",
-            "semantic_type": "session_identifier",
-            "examples": ["abc123"],
-            "common_patterns": ["Alphanumeric session IDs"]
-          },
-          "_raw.extension.devicePayload.vpn_user": {
-            "field_path": "_raw.extension.devicePayload.vpn_user",
-            "semantic_type": "username",
-            "examples": ["bob@company.com"],
-            "common_patterns": ["Email format username"]
-          },
-          "_raw.extension.devicePayload.tunnel_id": {
-            "field_path": "_raw.extension.devicePayload.tunnel_id",
-            "semantic_type": "tunnel_identifier",
-            "examples": ["tunnel-567"],
-            "common_patterns": ["Tunnel identifier with prefix"]
-          },
-          "_raw.extension.requestPayload.query": {
-            "field_path": "_raw.extension.requestPayload.query",
-            "semantic_type": "sql_query",
-            "examples": ["select * from users"],
-            "common_patterns": ["SQL query strings"]
-          },
-          "_raw.extension.requestPayload.limit": {
-            "field_path": "_raw.extension.requestPayload.limit",
-            "semantic_type": "numeric_limit",
-            "examples": [100],
-            "common_patterns": ["Numeric values"]
-          },
-          "_raw.extension.requestPayload.username": {
-            "field_path": "_raw.extension.requestPayload.username",
-            "semantic_type": "username",
-            "examples": ["admin"],
-            "common_patterns": ["Username strings"]
-          },
-          "_raw.extension.body.name": {
-            "field_path": "_raw.extension.body.name",
-            "semantic_type": "person_name",
-            "examples": ["John Doe"],
-            "common_patterns": ["Full name"]
-          },
-          "_raw.extension.body.email": {
-            "field_path": "_raw.extension.body.email",
-            "semantic_type": "email_address",
-            "examples": ["john@example.com"],
-            "common_patterns": ["Email format"]
-          },
-          "_raw.extension.body.role": {
-            "field_path": "_raw.extension.body.role",
-            "semantic_type": "user_role",
-            "examples": ["admin"],
-            "common_patterns": ["Role names"]
-          }
-        },
-        "parsing_metadata": [
-          {
-            "field_path": "_raw",
-            "parsers_or_formats": ["cef_parser"],
-            "resulting_field_paths": ["_raw.syslog_prefix", "_raw.cef_header", "_raw.extension"],
-            "parent_parsed_field": null,
-            "parse_level": 0
-          },
-          {
-            "field_path": "_raw.extension.devicePayload",
-            "parsers_or_formats": ["json_parser"],
-            "resulting_field_paths": ["_raw.extension.devicePayload.user", "_raw.extension.devicePayload.session_id", "_raw.extension.devicePayload.vpn_user", "_raw.extension.devicePayload.tunnel_id"],
-            "parent_parsed_field": "_raw",
-            "parse_level": 1
-          },
-          {
-            "field_path": "_raw.extension.requestPayload",
-            "parsers_or_formats": ["base64-decode", "json_parser"],
-            "resulting_field_paths": ["_raw.extension.requestPayload.query", "_raw.extension.requestPayload.limit", "_raw.extension.requestPayload.username"],
-            "parent_parsed_field": "_raw",
-            "parse_level": 1
-          },
-          {
-            "field_path": "_raw.extension.body",
-            "parsers_or_formats": ["base64-decode", "json_parser"],
-            "resulting_field_paths": ["_raw.extension.body.name", "_raw.extension.body.email", "_raw.extension.body.role"],
-            "parent_parsed_field": "_raw",
-            "parse_level": 1
-          }
-        ]
-      }
+          "resulting_field_paths": [
+            "location.geoCoordinates.latitude",
+            "location.geoCoordinates.longitude"
+          ],
+          "parent_parsed_field": null,
+          "parse_level": 0
+        }
+      ]
     },
-    "analysis_confidence": 0.95,
-    "stopping_reason": "No new log types or fields discovered in last 2 batches",
-    "data_quality_issues": [],
-    "requires_human_review": false,
-    "analysis_notes": "Successfully parsed all log types. Azure AD logs required JSON parsing for geoCoordinates. Teams logs required JSON parsing for Participants and multi-phase parsing (base64 then JSON) for MessageDetails. CEF logs required CEF parsing at parse_level=0, then nested parsing at parse_level=1 for devicePayload (JSON) and requestPayload/body (base64 then JSON). All parsing completed successfully with comprehensive field extraction.",
-    "processing_time_minutes": 0.8
-  }
-  
+    "o365_teams_activity": {
+      "name": "Microsoft Teams Activity Logs",
+      "primary_use": "Microsoft Teams user activity and communication events",
+      "count_in_dataset": 3,
+      "identification_rules": {
+        "primary": [
+          {
+            "field": "_sourcetype",
+            "operator": "equals",
+            "value": "o365:management:activity",
+            "confidence": 0.9
+          },
+          {
+            "field": "RecordType",
+            "operator": "equals",
+            "value": "25",
+            "confidence": 0.95
+          }
+        ],
+        "secondary": [
+          {
+            "field": "Workload",
+            "operator": "equals",
+            "value": "MicrosoftTeams",
+            "confidence": 0.85
+          }
+        ]
+      },
+      "schema": {
+        "_time": {
+          "field_path": "_time",
+          "semantic_type": "timestamp",
+          "examples": [
+            "2025-07-01T06:55:51.000+00:00",
+            "2025-07-01T09:22:15.000+00:00"
+          ],
+          "common_patterns": [
+            "ISO 8601 datetime with timezone"
+          ]
+        },
+        "_sourcetype": {
+          "field_path": "_sourcetype",
+          "semantic_type": "log_source_identifier",
+          "examples": [
+            "o365:management:activity"
+          ],
+          "common_patterns": [
+            "colon-separated source type"
+          ]
+        },
+        "Id": {
+          "field_path": "Id",
+          "semantic_type": "event_id",
+          "examples": [
+            "b36325e4-7d3a-4399-97d6-8a4c30954b77",
+            "c47436f5-8e4b-5500-a8e7-9b5d41065c88",
+            "d58547g6-9f5c-6611-b9f8-0c3e52166d99"
+          ],
+          "common_patterns": [
+            "UUID format (may vary)"
+          ]
+        },
+        "Operation": {
+          "field_path": "Operation",
+          "semantic_type": "action_type",
+          "examples": [
+            "MessagesListed",
+            "TeamsSessionStarted",
+            "CallStarted"
+          ],
+          "common_patterns": [
+            "CamelCase operation names"
+          ]
+        },
+        "RecordType": {
+          "field_path": "RecordType",
+          "semantic_type": "record_type_id",
+          "examples": [
+            "25"
+          ],
+          "common_patterns": [
+            "Numeric record type identifier as string"
+          ]
+        },
+        "UserId": {
+          "field_path": "UserId",
+          "semantic_type": "username",
+          "examples": [
+            "john.doe@company.com",
+            "jane.smith@company.com",
+            "alice@company.com"
+          ],
+          "common_patterns": [
+            "email format username"
+          ]
+        },
+        "ClientIP": {
+          "field_path": "ClientIP",
+          "semantic_type": "ip_address",
+          "examples": [
+            "192.168.1.50",
+            "10.0.0.25",
+            "172.16.0.10"
+          ],
+          "common_patterns": [
+            "IPv4 addresses"
+          ]
+        },
+        "Workload": {
+          "field_path": "Workload",
+          "semantic_type": "service_name",
+          "examples": [
+            "MicrosoftTeams"
+          ],
+          "common_patterns": [
+            "Service/workload names"
+          ]
+        },
+        "TeamsMeetingDetail.MeetingURL": {
+          "field_path": "TeamsMeetingDetail.MeetingURL",
+          "semantic_type": "url",
+          "examples": [
+            "https://teams.microsoft.com/l/meetup-join/..."
+          ],
+          "common_patterns": [
+            "HTTPS URLs"
+          ]
+        },
+        "TeamsMeetingDetail.Participants.UserId": {
+          "field_path": "TeamsMeetingDetail.Participants.UserId",
+          "semantic_type": "username",
+          "examples": [
+            "user1@company.com",
+            "user2@company.com",
+            "alice@company.com"
+          ],
+          "common_patterns": [
+            "email format username"
+          ]
+        },
+        "TeamsMeetingDetail.Participants.Role": {
+          "field_path": "TeamsMeetingDetail.Participants.Role",
+          "semantic_type": "participant_role",
+          "examples": [
+            "Organizer",
+            "Attendee",
+            "Presenter"
+          ],
+          "common_patterns": [
+            "Role type"
+          ]
+        },
+        "CommunicationType": {
+          "field_path": "CommunicationType",
+          "semantic_type": "communication_method",
+          "examples": [
+            "Meeting",
+            "Channel"
+          ],
+          "common_patterns": [
+            "Communication type categories"
+          ]
+        },
+        "MessageDetails.message": {
+          "field_path": "MessageDetails.message",
+          "semantic_type": "message_text",
+          "examples": [
+            "Hello world",
+            "Meeting scheduled",
+            "Team sync call"
+          ],
+          "common_patterns": [
+            "Plain text messages"
+          ]
+        },
+        "MessageDetails.timestamp": {
+          "field_path": "MessageDetails.timestamp",
+          "semantic_type": "timestamp",
+          "examples": [
+            "2025-07-01T10:00:00Z",
+            "2025-07-01T14:30:00Z",
+            "2025-07-01T10:05:00Z"
+          ],
+          "common_patterns": [
+            "ISO 8601 datetime"
+          ]
+        }
+      },
+      "parsing_metadata": [
+        {
+          "field_path": "TeamsMeetingDetail.Participants",
+          "parsers_or_formats": [
+            "json_parser"
+          ],
+          "resulting_field_paths": [
+            "TeamsMeetingDetail.Participants.UserId",
+            "TeamsMeetingDetail.Participants.Role"
+          ],
+          "parent_parsed_field": null,
+          "parse_level": 0
+        },
+        {
+          "field_path": "MessageDetails",
+          "parsers_or_formats": [
+            "base64-decode",
+            "json_parser"
+          ],
+          "resulting_field_paths": [
+            "MessageDetails.message",
+            "MessageDetails.timestamp"
+          ],
+          "parent_parsed_field": null,
+          "parse_level": 0
+        }
+      ]
+    },
+    "cef_security": {
+      "name": "CEF Security Logs",
+      "primary_use": "Network security events in Common Event Format",
+      "count_in_dataset": 4,
+      "identification_rules": {
+        "primary": [
+          {
+            "field": "_sourcetype",
+            "operator": "equals",
+            "value": "cef:security",
+            "confidence": 0.95
+          },
+          {
+            "field": "_raw",
+            "operator": "contains",
+            "value": "CEF:",
+            "confidence": 0.98
+          }
+        ]
+      },
+      "schema": {
+        "_raw.syslog_prefix": {
+          "field_path": "_raw.syslog_prefix",
+          "semantic_type": "syslog_header",
+          "examples": [
+            "<134>Sep 21 10:15:42 firewall-01",
+            "<189>Sep 21 10:17:30 firewall-01",
+            "<190>Sep 21 10:18:45 firewall-01"
+          ],
+          "common_patterns": [
+            "Syslog priority and timestamp"
+          ]
+        },
+        "_raw.cef_header.version": {
+          "field_path": "_raw.cef_header.version",
+          "semantic_type": "cef_version",
+          "examples": [
+            "0"
+          ],
+          "common_patterns": [
+            "CEF version number"
+          ]
+        },
+        "_raw.cef_header.device_vendor": {
+          "field_path": "_raw.cef_header.device_vendor",
+          "semantic_type": "vendor_name",
+          "examples": [
+            "Fortinet",
+            "Palo Alto Networks",
+            "Check Point"
+          ],
+          "common_patterns": [
+            "Vendor names"
+          ]
+        },
+        "_raw.cef_header.device_product": {
+          "field_path": "_raw.cef_header.device_product",
+          "semantic_type": "product_name",
+          "examples": [
+            "Fortigate",
+            "PAN-OS",
+            "VPN-1"
+          ],
+          "common_patterns": [
+            "Product names"
+          ]
+        },
+        "_raw.cef_header.device_version": {
+          "field_path": "_raw.cef_header.device_version",
+          "semantic_type": "product_version",
+          "examples": [
+            "v7.0",
+            "10.1",
+            "R80.40"
+          ],
+          "common_patterns": [
+            "Version strings"
+          ]
+        },
+        "_raw.cef_header.signature_id": {
+          "field_path": "_raw.cef_header.signature_id",
+          "semantic_type": "signature_id",
+          "examples": [
+            "0001",
+            "0020",
+            "accept"
+          ],
+          "common_patterns": [
+            "Alphanumeric signature IDs"
+          ]
+        },
+        "_raw.cef_header.name": {
+          "field_path": "_raw.cef_header.name",
+          "semantic_type": "event_name",
+          "examples": [
+            "traffic:forward",
+            "TRAFFIC",
+            "Traffic Accept"
+          ],
+          "common_patterns": [
+            "Event names"
+          ]
+        },
+        "_raw.cef_header.severity": {
+          "field_path": "_raw.cef_header.severity",
+          "semantic_type": "severity",
+          "examples": [
+            "3",
+            "5",
+            "2"
+          ],
+          "common_patterns": [
+            "Numeric severity levels as strings"
+          ]
+        },
+        "_raw.extension.src": {
+          "field_path": "_raw.extension.src",
+          "semantic_type": "ip_address",
+          "examples": [
+            "10.1.1.100",
+            "192.168.50.25",
+            "203.0.113.10"
+          ],
+          "common_patterns": [
+            "IPv4 addresses"
+          ]
+        },
+        "_raw.extension.dst": {
+          "field_path": "_raw.extension.dst",
+          "semantic_type": "ip_address",
+          "examples": [
+            "8.8.8.8",
+            "1.1.1.1",
+            "10.0.0.5"
+          ],
+          "common_patterns": [
+            "IPv4 addresses"
+          ]
+        },
+        "_raw.extension.spt": {
+          "field_path": "_raw.extension.spt",
+          "semantic_type": "port_number",
+          "examples": [
+            "54321",
+            "49152",
+            "443"
+          ],
+          "common_patterns": [
+            "Port numbers"
+          ]
+        },
+        "_raw.extension.dpt": {
+          "field_path": "_raw.extension.dpt",
+          "semantic_type": "port_number",
+          "examples": [
+            "443",
+            "53",
+            "22",
+            "80"
+          ],
+          "common_patterns": [
+            "Port numbers"
+          ]
+        },
+        "_raw.extension.proto": {
+          "field_path": "_raw.extension.proto",
+          "semantic_type": "network_protocol",
+          "examples": [
+            "TCP",
+            "UDP"
+          ],
+          "common_patterns": [
+            "Protocol names"
+          ]
+        },
+        "_raw.extension.act": {
+          "field_path": "_raw.extension.act",
+          "semantic_type": "action",
+          "examples": [
+            "accept"
+          ],
+          "common_patterns": [
+            "Action strings"
+          ]
+        },
+        "_raw.extension.devicePayload.user": {
+          "field_path": "_raw.extension.devicePayload.user",
+          "semantic_type": "username",
+          "examples": [
+            "alice"
+          ],
+          "common_patterns": [
+            "Lowercase usernames"
+          ]
+        },
+        "_raw.extension.devicePayload.session_id": {
+          "field_path": "_raw.extension.devicePayload.session_id",
+          "semantic_type": "session_identifier",
+          "examples": [
+            "abc123"
+          ],
+          "common_patterns": [
+            "Alphanumeric session IDs"
+          ]
+        },
+        "_raw.extension.devicePayload.auth_method": {
+          "field_path": "_raw.extension.devicePayload.auth_method",
+          "semantic_type": "authentication_method",
+          "examples": [
+            "certificate"
+          ],
+          "common_patterns": [
+            "Authentication methods"
+          ]
+        },
+        "_raw.extension.devicePayload.vpn_user": {
+          "field_path": "_raw.extension.devicePayload.vpn_user",
+          "semantic_type": "username",
+          "examples": [
+            "bob@company.com"
+          ],
+          "common_patterns": [
+            "Email format username"
+          ]
+        },
+        "_raw.extension.devicePayload.tunnel_id": {
+          "field_path": "_raw.extension.devicePayload.tunnel_id",
+          "semantic_type": "tunnel_identifier",
+          "examples": [
+            "tunnel-567"
+          ],
+          "common_patterns": [
+            "Tunnel identifier with prefix"
+          ]
+        },
+        "_raw.extension.devicePayload.encryption": {
+          "field_path": "_raw.extension.devicePayload.encryption",
+          "semantic_type": "encryption_algorithm",
+          "examples": [
+            "AES256"
+          ],
+          "common_patterns": [
+            "Encryption algorithms"
+          ]
+        }
+      },
+      "parsing_metadata": [
+        {
+          "field_path": "_raw",
+          "parsers_or_formats": [
+            "cef_parser"
+          ],
+          "resulting_field_paths": [
+            "_raw.syslog_prefix",
+            "_raw.cef_header",
+            "_raw.extension"
+          ],
+          "parent_parsed_field": null,
+          "parse_level": 0
+        },
+        {
+          "field_path": "_raw.extension.devicePayload",
+          "parsers_or_formats": [
+            "json_parser"
+          ],
+          "resulting_field_paths": [
+            "_raw.extension.devicePayload.user",
+            "_raw.extension.devicePayload.session_id",
+            "_raw.extension.devicePayload.auth_method",
+            "_raw.extension.devicePayload.vpn_user",
+            "_raw.extension.devicePayload.tunnel_id",
+            "_raw.extension.devicePayload.encryption"
+          ],
+          "parent_parsed_field": "_raw",
+          "parse_level": 1
+        }
+      ]
+    },
+    "cef_web": {
+      "name": "CEF Web Server Logs",
+      "primary_use": "Web server access and application events in CEF",
+      "count_in_dataset": 2,
+      "identification_rules": {
+        "primary": [
+          {
+            "field": "_sourcetype",
+            "operator": "equals",
+            "value": "cef:web",
+            "confidence": 0.95
+          }
+        ],
+        "secondary": [
+          {
+            "field": "_raw",
+            "operator": "contains",
+            "value": "CEF:",
+            "confidence": 0.9
+          }
+        ]
+      },
+      "schema": {
+        "_raw.syslog_prefix": {
+          "field_path": "_raw.syslog_prefix",
+          "semantic_type": "syslog_header",
+          "examples": [
+            "<134>Sep 21 10:20:00 web-server-01",
+            "<189>Sep 21 10:21:15 web-server-01"
+          ],
+          "common_patterns": [
+            "Syslog priority and timestamp"
+          ]
+        },
+        "_raw.cef_header.version": {
+          "field_path": "_raw.cef_header.version",
+          "semantic_type": "cef_version",
+          "examples": [
+            "0"
+          ],
+          "common_patterns": [
+            "CEF version number"
+          ]
+        },
+        "_raw.cef_header.device_vendor": {
+          "field_path": "_raw.cef_header.device_vendor",
+          "semantic_type": "vendor_name",
+          "examples": [
+            "Apache",
+            "Nginx"
+          ],
+          "common_patterns": [
+            "Vendor names"
+          ]
+        },
+        "_raw.cef_header.device_product": {
+          "field_path": "_raw.cef_header.device_product",
+          "semantic_type": "product_name",
+          "examples": [
+            "HTTPd",
+            "Plus"
+          ],
+          "common_patterns": [
+            "Product names"
+          ]
+        },
+        "_raw.cef_header.device_version": {
+          "field_path": "_raw.cef_header.device_version",
+          "semantic_type": "product_version",
+          "examples": [
+            "2.4",
+            "1.21"
+          ],
+          "common_patterns": [
+            "Version strings"
+          ]
+        },
+        "_raw.cef_header.signature_id": {
+          "field_path": "_raw.cef_header.signature_id",
+          "semantic_type": "signature_id",
+          "examples": [
+            "200",
+            "403"
+          ],
+          "common_patterns": [
+            "Status or signature codes"
+          ]
+        },
+        "_raw.cef_header.name": {
+          "field_path": "_raw.cef_header.name",
+          "semantic_type": "event_name",
+          "examples": [
+            "GET Request",
+            "Forbidden"
+          ],
+          "common_patterns": [
+            "Event names"
+          ]
+        },
+        "_raw.cef_header.severity": {
+          "field_path": "_raw.cef_header.severity",
+          "semantic_type": "severity",
+          "examples": [
+            "1",
+            "5"
+          ],
+          "common_patterns": [
+            "Numeric severity levels as strings"
+          ]
+        },
+        "_raw.extension.src": {
+          "field_path": "_raw.extension.src",
+          "semantic_type": "ip_address",
+          "examples": [
+            "198.51.100.50",
+            "198.51.100.75"
+          ],
+          "common_patterns": [
+            "IPv4 addresses"
+          ]
+        },
+        "_raw.extension.dst": {
+          "field_path": "_raw.extension.dst",
+          "semantic_type": "ip_address",
+          "examples": [
+            "10.2.2.100"
+          ],
+          "common_patterns": [
+            "IPv4 addresses"
+          ]
+        },
+        "_raw.extension.request": {
+          "field_path": "_raw.extension.request",
+          "semantic_type": "url_path",
+          "examples": [
+            "/api/data",
+            "/admin/login"
+          ],
+          "common_patterns": [
+            "URL paths"
+          ]
+        },
+        "_raw.extension.requestPayload.query": {
+          "field_path": "_raw.extension.requestPayload.query",
+          "semantic_type": "sql_query",
+          "examples": [
+            "select * from users"
+          ],
+          "common_patterns": [
+            "SQL query strings"
+          ]
+        },
+        "_raw.extension.requestPayload.limit": {
+          "field_path": "_raw.extension.requestPayload.limit",
+          "semantic_type": "numeric_limit",
+          "examples": [
+            100
+          ],
+          "common_patterns": [
+            "Numeric values"
+          ]
+        },
+        "_raw.extension.requestPayload.username": {
+          "field_path": "_raw.extension.requestPayload.username",
+          "semantic_type": "username",
+          "examples": [
+            "admin"
+          ],
+          "common_patterns": [
+            "Username strings"
+          ]
+        },
+        "_raw.extension.requestPayload.password": {
+          "field_path": "_raw.extension.requestPayload.password",
+          "semantic_type": "password",
+          "examples": [
+            "test123"
+          ],
+          "common_patterns": [
+            "Plain text password (sensitive)"
+          ]
+        }
+      },
+      "parsing_metadata": [
+        {
+          "field_path": "_raw",
+          "parsers_or_formats": [
+            "cef_parser"
+          ],
+          "resulting_field_paths": [
+            "_raw.syslog_prefix",
+            "_raw.cef_header",
+            "_raw.extension"
+          ],
+          "parent_parsed_field": null,
+          "parse_level": 0
+        },
+        {
+          "field_path": "_raw.extension.requestPayload",
+          "parsers_or_formats": [
+            "base64-decode",
+            "json_parser"
+          ],
+          "resulting_field_paths": [
+            "_raw.extension.requestPayload.query",
+            "_raw.extension.requestPayload.limit",
+            "_raw.extension.requestPayload.username",
+            "_raw.extension.requestPayload.password"
+          ],
+          "parent_parsed_field": "_raw",
+          "parse_level": 1
+        }
+      ]
+    },
+    "cef_api": {
+      "name": "CEF API Gateway Logs",
+      "primary_use": "API gateway request events in CEF",
+      "count_in_dataset": 1,
+      "identification_rules": {
+        "primary": [
+          {
+            "field": "_sourcetype",
+            "operator": "equals",
+            "value": "cef:api",
+            "confidence": 0.95
+          }
+        ],
+        "secondary": [
+          {
+            "field": "_raw",
+            "operator": "contains",
+            "value": "CEF:",
+            "confidence": 0.9
+          }
+        ]
+      },
+      "schema": {
+        "_raw.syslog_prefix": {
+          "field_path": "_raw.syslog_prefix",
+          "semantic_type": "syslog_header",
+          "examples": [
+            "<134>Sep 21 10:22:30 api-gateway"
+          ],
+          "common_patterns": [
+            "Syslog priority and timestamp"
+          ]
+        },
+        "_raw.cef_header.version": {
+          "field_path": "_raw.cef_header.version",
+          "semantic_type": "cef_version",
+          "examples": [
+            "0"
+          ],
+          "common_patterns": [
+            "CEF version number"
+          ]
+        },
+        "_raw.cef_header.device_vendor": {
+          "field_path": "_raw.cef_header.device_vendor",
+          "semantic_type": "vendor_name",
+          "examples": [
+            "Custom"
+          ],
+          "common_patterns": [
+            "Vendor names"
+          ]
+        },
+        "_raw.cef_header.device_product": {
+          "field_path": "_raw.cef_header.device_product",
+          "semantic_type": "product_name",
+          "examples": [
+            "API Gateway"
+          ],
+          "common_patterns": [
+            "Product names"
+          ]
+        },
+        "_raw.cef_header.device_version": {
+          "field_path": "_raw.cef_header.device_version",
+          "semantic_type": "product_version",
+          "examples": [
+            "2.0"
+          ],
+          "common_patterns": [
+            "Version strings"
+          ]
+        },
+        "_raw.cef_header.signature_id": {
+          "field_path": "_raw.cef_header.signature_id",
+          "semantic_type": "signature_id",
+          "examples": [
+            "POST"
+          ],
+          "common_patterns": [
+            "Method or signature strings"
+          ]
+        },
+        "_raw.cef_header.name": {
+          "field_path": "_raw.cef_header.name",
+          "semantic_type": "event_name",
+          "examples": [
+            "API Call"
+          ],
+          "common_patterns": [
+            "Event names"
+          ]
+        },
+        "_raw.cef_header.severity": {
+          "field_path": "_raw.cef_header.severity",
+          "semantic_type": "severity",
+          "examples": [
+            "3"
+          ],
+          "common_patterns": [
+            "Numeric severity levels as strings"
+          ]
+        },
+        "_raw.extension.src": {
+          "field_path": "_raw.extension.src",
+          "semantic_type": "ip_address",
+          "examples": [
+            "192.0.2.100"
+          ],
+          "common_patterns": [
+            "IPv4 addresses"
+          ]
+        },
+        "_raw.extension.dst": {
+          "field_path": "_raw.extension.dst",
+          "semantic_type": "ip_address",
+          "examples": [
+            "10.3.3.50"
+          ],
+          "common_patterns": [
+            "IPv4 addresses"
+          ]
+        },
+        "_raw.extension.endpoint": {
+          "field_path": "_raw.extension.endpoint",
+          "semantic_type": "url_path",
+          "examples": [
+            "/v1/users"
+          ],
+          "common_patterns": [
+            "URL paths"
+          ]
+        },
+        "_raw.extension.method": {
+          "field_path": "_raw.extension.method",
+          "semantic_type": "http_method",
+          "examples": [
+            "POST"
+          ],
+          "common_patterns": [
+            "HTTP methods"
+          ]
+        },
+        "_raw.extension.body.name": {
+          "field_path": "_raw.extension.body.name",
+          "semantic_type": "person_name",
+          "examples": [
+            "John Doe"
+          ],
+          "common_patterns": [
+            "Full name"
+          ]
+        },
+        "_raw.extension.body.email": {
+          "field_path": "_raw.extension.body.email",
+          "semantic_type": "email_address",
+          "examples": [
+            "john@example.com"
+          ],
+          "common_patterns": [
+            "Email format"
+          ]
+        },
+        "_raw.extension.body.role": {
+          "field_path": "_raw.extension.body.role",
+          "semantic_type": "user_role",
+          "examples": [
+            "admin"
+          ],
+          "common_patterns": [
+            "Role names"
+          ]
+        }
+      },
+      "parsing_metadata": [
+        {
+          "field_path": "_raw",
+          "parsers_or_formats": [
+            "cef_parser"
+          ],
+          "resulting_field_paths": [
+            "_raw.syslog_prefix",
+            "_raw.cef_header",
+            "_raw.extension"
+          ],
+          "parent_parsed_field": null,
+          "parse_level": 0
+        },
+        {
+          "field_path": "_raw.extension.body",
+          "parsers_or_formats": [
+            "base64-decode",
+            "json_parser"
+          ],
+          "resulting_field_paths": [
+            "_raw.extension.body.name",
+            "_raw.extension.body.email",
+            "_raw.extension.body.role"
+          ],
+          "parent_parsed_field": "_raw",
+          "parse_level": 1
+        }
+      ]
+    }
+  },
+  "analysis_confidence": 0.95,
+  "stopping_reason": "End of file",
+  "data_quality_issues": [
+    "One Teams Id appears non-UUID formatted (d58547g6-9f5c-6611-b9f8-0c3e52166d99)",
+    "Trailing blank line in input file"
+  ],
+  "requires_human_review": false,
+  "analysis_notes": "Successfully parsed all discovered log types. Azure AD logs required JSON parsing for location.geoCoordinates. Teams logs required JSON parsing for Participants and multi-phase parsing (base64 then JSON) for MessageDetails. CEF logs required CEF parsing at parse_level=0, then nested parsing at parse_level=1 for devicePayload (JSON) and requestPayload/body (base64 then JSON). All parsing completed successfully with comprehensive field extraction.",
+  "processing_time_minutes": 0.6
+}

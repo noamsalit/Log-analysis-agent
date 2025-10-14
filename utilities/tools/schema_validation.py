@@ -2,7 +2,7 @@ import json
 import logging
 from langchain_core.tools import tool, ToolException
 
-from models.log_type_schema import SchemaDocument
+from logs_analysis_agent.schema_models import SchemaDocument
 
 logger = logging.getLogger(__name__)
 

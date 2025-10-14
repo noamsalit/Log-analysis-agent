@@ -3,6 +3,15 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional, Union
 
+TRACE = 5
+logging.addLevelName(TRACE, "TRACE")
+
+def trace(self, message, *args, **kwargs):
+    """Log message with TRACE severity for extremely verbose logging."""
+    if self.isEnabledFor(TRACE):
+        self._log(TRACE, message, args, **kwargs)
+
+logging.Logger.trace = trace
 
 def init_logger(
     name: Optional[str] = None,
