@@ -121,6 +121,39 @@ ITERATIVE ANALYSIS PROCESS:
 3. Continue until no new log types or fields discovered for 10-15 consecutive batches
 4. Document stopping reasoning (i.e. no new log types or fields discovered for 10-15 consecutive batches, end of file, system error, etc.)
 
+LOG TYPE SEPARATION CRITERIA:
+Critical: Decide whether to create separate log types based on SEMANTIC PURPOSE, not just field overlap.
+
+1. **SEMANTIC PURPOSE (MOST IMPORTANT):**
+   - Do the logs serve different business/security purposes?
+   - Would they be queried by different stakeholders?
+   - Would they trigger different alerts or analytics?
+   → If YES to any: KEEP SEPARATE even if fields are similar
+
+2. **WHEN TO CONSOLIDATE:**
+   ONLY consolidate when ALL of these are true:
+   - Same semantic purpose (e.g., both are "network traffic logs")
+   - Map to same normalized model
+   - Action/status fields mean the same thing
+   - Only differ in minor details (e.g., slightly different metadata)
+
+3. **PRACTICAL RULE:**
+   If logs have a field like 'type', 'event_type', 'category', or 'subtype' that 
+   meaningfully distinguishes them, CREATE SEPARATE LOG TYPES for each value.
+   
+   Example:
+   - type="traffic" + subtype="forward" → separate_log_type_1
+   - type="traffic" + subtype="local" → separate_log_type_2
+   - type="utm" + subtype="webfilter" → separate_log_type_3
+   - type="event" + subtype="system" → separate_log_type_4
+
+4. **FORMAT DISTINCTION:**
+   When the same semantic log type appears in multiple serialization formats, create SEPARATE log types for each format.
+   CRITICAL: Identification rules must be mutually exclusive - never require multiple formats in one log type.
+   Use format suffixes when naming to distinguish variants: logtype_kv, logtype_cef, logtype_json
+
+When in doubt: Create separate log types. Over-separation is better than losing semantic meaning.
+
 PARSING WORKFLOW:
 
 1. Identify fields requiring parsing:
@@ -129,7 +162,7 @@ PARSING WORKFLOW:
      For example: base64-encoded JSON needs two phases: (1) base64-decode, (2) json_parser
    
    AVAILABLE PARSERS:
-   - Built-in: json_parser, cef_parser, syslog_kv_parser
+   - Existing parsers provided as tools
    - For unsupported formats, create custom parsers:
      a) Write parser function → save to custom_parsers/ directory
      b) Validate syntax before saving
@@ -137,13 +170,7 @@ PARSING WORKFLOW:
      d) Run tests with pytest to verify
      e) Debug/refine as needed
    
-   CUSTOM PARSER WORKFLOW:
-   If you need a file (wrong path, missing parser), use find_similar_files for fuzzy search.
-   Your tools include file operations, syntax validation, and safe command execution.
-   All operations are security-restricted (see tool docstrings for details).
-
-2. Parse fields iteratively and build parsing_metadata:
-   
+2. Parse fields iteratively and build parsing_metadata:  
    A. TOP-LEVEL PARSING (parse_level=0):
       - Identify fields in raw data that need parsing
       - Attempt parsing with appropriate parser tools or ad-hoc parsers
@@ -154,7 +181,6 @@ PARSING WORKFLOW:
         * parent_parsed_field: null
         * parse_level: 0
       - Remove the raw field from schema, add only the parsed fields
-   
    B. NESTED PARSING (parse_level>0):
       - Examine fields created by previous parsing that might need further parsing
       - For each such field, parse it and add entry to parsing_metadata:

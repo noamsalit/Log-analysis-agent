@@ -11,4 +11,3 @@
 {"_raw": "<134>Sep 21 10:20:00 web-server-01 CEF:0|Apache|HTTPd|2.4|200|GET Request|1|src=198.51.100.50 dst=10.2.2.100 request=/api/data requestPayload=eyJxdWVyeSI6InNlbGVjdCAqIGZyb20gdXNlcnMiLCJsaW1pdCI6MTAwfQ==", "_sourcetype": "cef:web"}
 {"_raw": "<189>Sep 21 10:21:15 web-server-01 CEF:0|Nginx|Plus|1.21|403|Forbidden|5|src=198.51.100.75 dst=10.2.2.100 request=/admin/login requestPayload=eyJ1c2VybmFtZSI6ImFkbWluIiwicGFzc3dvcmQiOiJ0ZXN0MTIzIn0=", "_sourcetype": "cef:web"}
 {"_raw": "<134>Sep 21 10:22:30 api-gateway CEF:0|Custom|API Gateway|2.0|POST|API Call|3|src=192.0.2.100 dst=10.3.3.50 endpoint=/v1/users method=POST body=eyJuYW1lIjoiSm9obiBEb2UiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4ifQ==", "_sourcetype": "cef:api"}
-
