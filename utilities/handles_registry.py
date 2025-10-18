@@ -27,6 +27,9 @@ class FileHandleEntry(HandleEntry):
 
 class HandlesRegistry:
     def __init__(self):
+        """
+        Initialize a new handles registry for managing file handles and other resources.
+        """
         self.id_to_handle = dict()
     
     def add_handle_entry(self, handle_entry: HandleEntry) -> None:

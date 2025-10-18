@@ -6,29 +6,23 @@ from utilities.callbacks.model_normalizers import (
 from utilities.callbacks.tokens_counter import TokensCounter
 from utilities.callbacks.metrics_models import (
     BaseMetrics,
-    # LLM metrics
     LLMStartMetrics,
     LLMUsageMetrics,
     LLMEndMetrics,
     LLMErrorMetrics,
-    # Tool metrics
     ToolStartMetrics,
     ToolEndMetrics,
     ToolErrorMetrics,
-    # Agent metrics
     AgentStartMetrics,
     AgentEndMetrics,
     AgentTokenSummaryMetrics,
     AgentIterationMetrics,
-    # Parser metrics
     ParseStartMetrics,
     ParseEndMetrics,
     ParseValidationMetrics,
-    # Batch metrics
     BatchStartMetrics,
     BatchEndMetrics,
     BatchDiscoveryMetrics,
-    # Handle metrics
     HandleOpenMetrics,
     HandleCloseMetrics
 )

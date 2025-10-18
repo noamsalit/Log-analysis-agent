@@ -37,8 +37,19 @@ def _extract_data_metadata(data: Any, default_key: str = "data") -> tuple[Dict[s
 
 
 class ObservabilityCallbackHandler(BaseCallbackHandler):
+    """
+    LangChain callback handler for comprehensive observability of agent execution.
+    Tracks and logs metrics for agent runs, LLM calls, tool usage, and token consumption.
+    """
     
     def __init__(self, logger: logging.Logger, run_id: str, normalizer: LLMResponseNormalizer):
+        """
+        Initialize the observability callback handler.
+        
+        :param logger: Logger instance for writing observability data
+        :param run_id: Correlation ID for the agent run
+        :param normalizer: LLM response normalizer for provider-specific data extraction
+        """
         self.logger = logger
         self.run_id = run_id
         self.normalizer = normalizer
@@ -150,7 +161,6 @@ class ObservabilityCallbackHandler(BaseCallbackHandler):
         try:
             metrics = self.normalizer.normalize_error(error, self.run_id)
             
-            # Track failed tokens for billing estimate if available
             response = kwargs.get('response')
             if response:
                 try:

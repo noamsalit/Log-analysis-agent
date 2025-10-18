@@ -40,6 +40,13 @@ def _validate_search_directories(
 
 
 def _validate_file_path(file_path: str, allowed_dirs: List[str]) -> Path:
+    """
+    Validate that a file path exists, is a file, and is within allowed directories.
+    
+    :param file_path: Path to the file to validate
+    :param allowed_dirs: List of allowed directory paths
+    :return: Validated Path object
+    """
     if not is_path_allowed(file_path, allowed_dirs):
         raise ToolException(
             f"File path not in allowed directories. Allowed: {allowed_dirs}"
@@ -56,6 +63,13 @@ def _validate_file_path(file_path: str, allowed_dirs: List[str]) -> Path:
 
 
 def _validate_directory_path(directory_path: str, allowed_dirs: List[str]) -> Path:
+    """
+    Validate that a directory path exists, is a directory, and is within allowed directories.
+    
+    :param directory_path: Path to the directory to validate
+    :param allowed_dirs: List of allowed directory paths
+    :return: Validated Path object
+    """
     if not is_path_allowed(directory_path, allowed_dirs):
         raise ToolException(
             f"Directory not in allowed directories. Allowed: {allowed_dirs}"

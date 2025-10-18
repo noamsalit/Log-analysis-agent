@@ -42,6 +42,12 @@ ALLOWED_COMMANDS = {
 
 
 def _validate_command_args(command_type: str, args: List[str]) -> None:
+    """
+    Validate that command arguments are safe and allowed.
+    
+    :param command_type: Type of command (e.g., 'pytest')
+    :param args: List of command arguments to validate
+    """
     command_info = ALLOWED_COMMANDS[command_type]
     args_str = " ".join(args)
     for pattern in command_info["forbidden_patterns"]:

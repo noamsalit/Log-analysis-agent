@@ -14,27 +14,62 @@ logger = logging.getLogger(__name__)
 
 
 class LLMResponseNormalizer(ABC):
+    """Abstract base class for normalizing LLM provider-specific responses into common metrics."""
     
     @abstractmethod
     def normalize_start(self, serialized: Dict, prompts: List[str], run_id: str) -> LLMStartMetrics:
+        """
+        Normalize LLM start event into standard metrics.
+        
+        :param serialized: Serialized LLM configuration
+        :param prompts: List of prompt strings
+        :param run_id: Correlation ID for the agent run
+        :return: Normalized LLM start metrics
+        """
         pass
     
     @abstractmethod
     def normalize_usage(self, response: LLMResult, run_id: str) -> LLMUsageMetrics:
+        """
+        Extract and normalize token usage from LLM response.
+        
+        :param response: LLM response object
+        :param run_id: Correlation ID for the agent run
+        :return: Normalized token usage metrics
+        """
         pass
     
     @abstractmethod
     def normalize_end(self, response: LLMResult, run_id: str, duration_ms: float) -> LLMEndMetrics:
+        """
+        Normalize LLM end event into standard metrics.
+        
+        :param response: LLM response object
+        :param run_id: Correlation ID for the agent run
+        :param duration_ms: Duration of the LLM call in milliseconds
+        :return: Normalized LLM end metrics
+        """
         pass
     
     @abstractmethod
     def normalize_error(self, error: Exception, run_id: str) -> LLMErrorMetrics:
+        """
+        Normalize LLM error into standard metrics.
+        
+        :param error: Exception that occurred
+        :param run_id: Correlation ID for the agent run
+        :return: Normalized LLM error metrics
+        """
         pass
 
 
 class AzureOpenAINormalizer(LLMResponseNormalizer):
+    """Azure OpenAI-specific implementation of LLM response normalization."""
     
     def __init__(self):
+        """
+        Initialize Azure OpenAI normalizer with response structure logging flag.
+        """
         self._structure_logged = False
     
     def normalize_start(self, serialized: Dict, prompts: List[str], run_id: str) -> LLMStartMetrics:
@@ -65,7 +100,6 @@ class AzureOpenAINormalizer(LLMResponseNormalizer):
                             logger.debug(f"Azure LLM response_metadata: {gen.message.response_metadata}")
                 self._structure_logged = True
             
-            # Try message.usage_metadata first (LangChain 0.3+ with Azure OpenAI)
             if response.generations and response.generations[0]:
                 gen = response.generations[0][0]
                 if hasattr(gen, 'message') and hasattr(gen.message, 'usage_metadata'):
@@ -78,7 +112,6 @@ class AzureOpenAINormalizer(LLMResponseNormalizer):
                             total_tokens=usage_metadata.get('total_tokens', 0)
                         )
             
-            # Try llm_output (some LangChain versions put tokens here)
             if response.llm_output and isinstance(response.llm_output, dict):
                 if 'token_usage' in response.llm_output:
                     usage = response.llm_output['token_usage']
@@ -89,7 +122,6 @@ class AzureOpenAINormalizer(LLMResponseNormalizer):
                         total_tokens=usage.get('total_tokens', 0)
                     )
             
-            # Try message.response_metadata (older LangChain versions)
             if response.generations and response.generations[0]:
                 gen = response.generations[0][0]
                 if hasattr(gen, 'message') and hasattr(gen.message, 'response_metadata'):

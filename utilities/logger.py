@@ -2,9 +2,37 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional, Union
+from enum import Enum
 
 TRACE = 5
 logging.addLevelName(TRACE, "TRACE")
+
+
+class LogLevel(Enum):
+    """Enumeration of supported logging levels."""
+    TRACE = TRACE
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARNING = logging.WARNING
+    ERROR = logging.ERROR
+    
+    @classmethod
+    def from_string(cls, level_str: str) -> 'LogLevel':
+        """
+        Convert string to LogLevel enum.
+        
+        :param level_str: String representation of log level (case-insensitive)
+        :return: Corresponding LogLevel enum value
+        :raises ValueError: If level_str is not a valid log level
+        """
+        try:
+            return cls[level_str.upper()]
+        except KeyError:
+            valid_levels = ', '.join([level.name for level in cls])
+            raise ValueError(
+                f"Invalid log level: {level_str}. "
+                f"Valid levels are: {valid_levels}"
+            )
 
 def trace(self, message, *args, **kwargs):
     """Log message with TRACE severity for extremely verbose logging."""
@@ -80,7 +108,6 @@ def init_logger(
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
-    # Avoid duplicating logs to ancestor loggers (e.g., root)
     logger.propagate = False
 
     setattr(logger, "_configured_by_init_logger", True)

@@ -5,12 +5,11 @@ repo_root = Path(__file__).parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
-import dotenv
 import os
 import json
 import logging
+from typing import Any
 
-from langchain_openai import AzureChatOpenAI
 from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
@@ -27,11 +26,9 @@ from utilities.callbacks import (
     AzureOpenAINormalizer
 )
 from utilities.tools import (
-    # Parsers
     json_parser,
     cef_parser,
     syslog_kv_parser,
-    # File operations
     make_file_tools,
     line_count,
     write_json,
@@ -40,32 +37,15 @@ from utilities.tools import (
     read_file_content,
     write_file_content,
     list_directory_contents,
-    # Code operations
     validate_python_syntax,
     run_safe_command,
-    # Schema validation
     parse_and_validate_schema_document,
 )
-
-dotenv.load_dotenv()
-
-AZURE_OPENAI_API_KEY=os.getenv("AZURE_OPENAI_API_KEY")
-AZURE_OPENAI_ENDPOINT=os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_API_VERSION=os.getenv("AZURE_OPENAI_API_VERSION")
-AZURE_OPENAI_API_DEPLOYMENT_NAME=os.getenv("AZURE_OPENAI_API_DEPLOYMENT_NAME")
 
 logger = init_logger(
     name=__name__,
     console_level=logging.INFO,
-    file_level=TRACE  # TRACE level for detailed observability logs
-)
-
-llm_client = AzureChatOpenAI(
-    api_key=AZURE_OPENAI_API_KEY,
-    azure_endpoint=AZURE_OPENAI_ENDPOINT,
-    api_version=AZURE_OPENAI_API_VERSION,
-    azure_deployment=AZURE_OPENAI_API_DEPLOYMENT_NAME,
-    model_kwargs={"stream_options": {"include_usage": True}}
+    file_level=TRACE
 )
 
 def _load_example_schema() -> str:
@@ -101,7 +81,7 @@ _JSON_SCHEMA = _generate_output_contract_json_schema()
 _REFERENCE_EXAMPLE = _load_example_schema()
 
 SYSTEM_PROMPT = f"""
-You are an Index Schema Analysis Agent specializing in discovering log types and their schemas through iterative sampling of SIEM log data.
+You are an Index Schema Analysis Agent specializing in discovering log types and their schemas through iterative sampling of log data from various platforms.
 Your mission: Analyze stored log samples to discover distinct log types within an index, create identification rules for each type, parse nested/encoded fields, and document complete field schemas with semantic data types for the FULLY PARSED data structure.
 You will be provided with a jsonl file path that contains the log samples, an index name where the logs are taken from and a registry to store the log samples.
 The registry is already initialized and you can access it using the tools provided.
@@ -125,7 +105,7 @@ LOG TYPE SEPARATION CRITERIA:
 Critical: Decide whether to create separate log types based on SEMANTIC PURPOSE, not just field overlap.
 
 1. **SEMANTIC PURPOSE (MOST IMPORTANT):**
-   - Do the logs serve different business/security purposes?
+   - Do the logs serve different business purposes (security, auditing, debugging, monitoring, etc.)?
    - Would they be queried by different stakeholders?
    - Would they trigger different alerts or analytics?
    → If YES to any: KEEP SEPARATE even if fields are similar
@@ -247,16 +227,23 @@ prompt = ChatPromptTemplate.from_messages([
     MessagesPlaceholder("agent_scratchpad"),
 ])
 
-def run_agent(index_name: str, logs_file_path: str) -> SchemaDocument:
+def run_agent(
+    index_name: str,
+    logs_file_path: str,
+    llm_client: Any
+) -> SchemaDocument:
     """
-    Run the agent with the given input text.
+    Run the schema analysis agent on a log dataset.
+    
+    :param index_name: Name of the log index being analyzed
+    :param logs_file_path: Path to the JSONL file containing log samples
+    :param llm_client: LLM client instance to use for the agent
+    :return: SchemaDocument containing discovered log types and schemas
     """
-    # Generate and set correlation ID for this run
     run_id = generate_correlation_id()
     set_correlation_id(run_id)
     logger.info(f"Starting agent run with correlation ID: {run_id}")
     
-    # Initialize observability callback handler
     normalizer = AzureOpenAINormalizer()
     observability_handler = ObservabilityCallbackHandler(
         logger=logger,
@@ -323,15 +310,5 @@ def run_agent(index_name: str, logs_file_path: str) -> SchemaDocument:
         )
         return SchemaDocument.model_validate_json(agent_result["output"])
     finally:
-        # Clean up correlation ID after run
         clear_correlation_id()
         logger.info(f"Completed agent run: {run_id}")
-
-if __name__ == "__main__":
-    index_name = "device_data"
-    logs_file_path = "/Users/noamsalit/Git/Noam-Salit/log_samples/Amsys/analysis/device_data_amsys_flattened.jsonl"
-    logger.info("Starting the agent")
-    data = run_agent(index_name, logs_file_path)
-    print(type(data))
-    print(data)
-    logger.info("Agent finished")
