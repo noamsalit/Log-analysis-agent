@@ -103,7 +103,7 @@ An AI-powered agent that automates the entire schema discovery process:
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.12
 - Azure OpenAI API access (or adapt for other providers)
 - Environment variables configured (see [Configuration](#configuration))
 
