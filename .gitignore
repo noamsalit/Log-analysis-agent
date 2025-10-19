@@ -56,6 +56,7 @@ logs/
 log_samples/*/analysis/
 log_samples/*/*.json
 log_samples/*/*.jsonl
+results/
 
 # Cursor AI / Development Scratch
 cursor_scratch/

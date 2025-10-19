@@ -111,8 +111,8 @@ An AI-powered agent that automates the entire schema discovery process:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/log-schema-agent.git
-cd log-schema-agent
+git clone https://github.com/noamsalit/Log-analysis-agent.git
+cd Log-analysis-agent
 
 # Install dependencies
 pip install -r requirements.txt
@@ -567,15 +567,6 @@ If you find issues or have ideas:
 ## License
 
 MIT License - See LICENSE file for details
-
----
-
-## Contact
-
-**Noam Salit**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [linkedin.com/in/yourprofile](https://linkedin.com/in/yourprofile)
-- Email: your.email@example.com
 
 ---
 
